@@ -8,7 +8,7 @@
 
 	<name>spring-boot-starter-jdbc-helper</name>
 	<url>https://github.com/nyvi/spring-boot-starter-jdbc-helper</url>
-	<description></description>
+	<description>SpringJDBC Helper</description>
 
 	<licenses>
 		<license>
