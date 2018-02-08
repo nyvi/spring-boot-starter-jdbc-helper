@@ -54,4 +54,26 @@ public class TableData<T> {
 	public static <T> TableData<T> empty() {
 		return new TableData<>(0, new ArrayList<>(0));
 	}
+
+	public Integer getTotal() {
+		return total;
+	}
+
+	public void setTotal(Integer total) {
+		this.total = total;
+	}
+
+	public List<T> getRows() {
+		return rows;
+	}
+
+	public void setRows(List<T> rows) {
+		this.rows = rows;
+	}
+
+	@Override
+	public String toString() {
+		return "TableData [total=" + total + ", rows=" + rows + "]";
+	}
+
 }
