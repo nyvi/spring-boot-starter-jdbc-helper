@@ -164,8 +164,6 @@ public class BaseDAO<T extends BaseDO> {
 		return namedParameterJdbcTemplate.batchUpdate(sql, valueParameter).length;
 	}
 
-	/** ----------------------------------------------------------------------------------- */
-
 	/**
 	 * 获取添加的sql语句
 	 * @return insert sql
