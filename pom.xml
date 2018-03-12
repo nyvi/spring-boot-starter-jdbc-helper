@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.nyvi</groupId>
 	<artifactId>spring-boot-starter-jdbc-helper</artifactId>
-	<version>1.0.2</version>
+	<version>1.1.0</version>
 	<packaging>jar</packaging>
 
 	<name>spring-boot-starter-jdbc-helper</name>
@@ -36,8 +36,7 @@
 	</scm>
 
 	<properties>
-		<java.version>1.8</java.version>
-		<spring-boot.version>1.5.10.RELEASE</spring-boot.version>
+		<spring-boot.version>2.0.0.RELEASE</spring-boot.version>
 	</properties>
 
 	<dependencyManagement>
