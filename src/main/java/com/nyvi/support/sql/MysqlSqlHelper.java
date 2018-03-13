@@ -65,7 +65,7 @@ public class MysqlSqlHelper implements SqlHelper {
 		StringBuilder fieldBuilder = new StringBuilder(128);
 		List<TableFieldInfo> fieldList = table.getFieldList();
 		for (TableFieldInfo tableFieldInfo : fieldList) {
-			if (paramMap.containsKey(tableFieldInfo.getProperty())) {
+			if (tableFieldInfo.isUpdate() && paramMap.containsKey(tableFieldInfo.getProperty())) {
 				fieldBuilder.append(tableFieldInfo.getColumn()).append("=:").append(tableFieldInfo.getProperty())
 						.append(",");
 			}

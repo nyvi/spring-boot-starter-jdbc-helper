@@ -113,13 +113,12 @@ public class TableInfoHelper {
 		List<QueryInfo> queryInfoList = null;
 		if (!CollectionUtils.isEmpty(fieldList)) {
 			queryInfoList = new ArrayList<>(fieldList.size());
-			QueryInfo queryInfo = null;
 			for (Field field : fieldList) {
 				if (field.isAnnotationPresent(Query.class)) {
 					Query query = field.getAnnotation(Query.class);
 					String column = StrUtils.defaultIfBlank(query.value(), StrUtils.camelToUnderline(field.getName()));
-					queryInfo = new QueryInfo(column, field.getName(), query.operate(), query.prefix(), query.suffix());
-					queryInfoList.add(queryInfo);
+					queryInfoList.add(
+							new QueryInfo(column, field.getName(), query.operate(), query.prefix(), query.suffix()));
 				}
 			}
 		}
@@ -139,16 +138,12 @@ public class TableInfoHelper {
 		List<TableFieldInfo> tableFieldInfoList = null;
 		if (!CollectionUtils.isEmpty(fieldList)) {
 			tableFieldInfoList = new ArrayList<>(fieldList.size());
-			TableFieldInfo tableFieldInfo = null;
 			for (Field field : fieldList) {
 				if (field.isAnnotationPresent(Column.class)) {
-					tableFieldInfo = new TableFieldInfo();
 					Column column = field.getAnnotation(Column.class);
 					String columnName = StrUtils.defaultIfBlank(column.value(),
 							StrUtils.camelToUnderline(field.getName()));
-					tableFieldInfo.setProperty(field.getName());
-					tableFieldInfo.setColumn(columnName);
-					tableFieldInfoList.add(tableFieldInfo);
+					tableFieldInfoList.add(new TableFieldInfo(columnName, field.getName(), column.update()));
 				}
 			}
 		}

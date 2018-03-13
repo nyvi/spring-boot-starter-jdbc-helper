@@ -24,5 +24,13 @@ public @interface Column {
 	 * @return 表字段名称
 	 */
 	String value() default "";
+	
+	/**
+	 * <p>
+	 * 是否更新,默认true
+	 * </p>
+	 * @return 是否更新
+	 */
+	boolean update() default true;
 
 }

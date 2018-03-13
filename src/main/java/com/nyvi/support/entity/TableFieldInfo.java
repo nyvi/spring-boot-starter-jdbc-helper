@@ -23,6 +23,17 @@ public class TableFieldInfo {
 	 */
 	private boolean update;
 
+	public TableFieldInfo() {
+		super();
+	}
+
+	public TableFieldInfo(String column, String property, boolean update) {
+		super();
+		this.column = column;
+		this.property = property;
+		this.update = update;
+	}
+
 	public String getColumn() {
 		return column;
 	}
