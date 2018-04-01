@@ -15,6 +15,7 @@ import com.nyvi.support.annotation.Table;
 import com.nyvi.support.entity.QueryInfo;
 import com.nyvi.support.entity.TableFieldInfo;
 import com.nyvi.support.entity.TableInfo;
+import com.nyvi.support.enums.Operate;
 import com.nyvi.support.exception.SpringJDBCHelperException;
 
 /**
@@ -114,11 +115,23 @@ public class TableInfoHelper {
 		if (!CollectionUtils.isEmpty(fieldList)) {
 			queryInfoList = new ArrayList<>(fieldList.size());
 			for (Field field : fieldList) {
+				// 个性化查询 Query 注解
 				if (field.isAnnotationPresent(Query.class)) {
 					Query query = field.getAnnotation(Query.class);
-					String column = StrUtils.defaultIfBlank(query.value(), StrUtils.camelToUnderline(field.getName()));
+					String columnName = StrUtils.defaultIfBlank(query.value(),
+							StrUtils.camelToUnderline(field.getName()));
+					queryInfoList.add(new QueryInfo(columnName, field.getName(), query.operate(), query.prefix(),
+							query.suffix()));
+					continue;
+				}
+				// 默认查询 Column 注解
+				if (field.isAnnotationPresent(Column.class)) {
+					Column column = field.getAnnotation(Column.class);
+					String columnName = StrUtils.defaultIfBlank(column.value(),
+							StrUtils.camelToUnderline(field.getName()));
 					queryInfoList.add(
-							new QueryInfo(column, field.getName(), query.operate(), query.prefix(), query.suffix()));
+							new QueryInfo(columnName, field.getName(), Operate.EQ, StrUtils.EMPTY, StrUtils.EMPTY));
+					continue;
 				}
 			}
 		}

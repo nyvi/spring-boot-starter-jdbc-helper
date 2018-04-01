@@ -15,7 +15,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.util.CollectionUtils;
 
-import com.nyvi.support.base.query.BaseQuery;
+import com.nyvi.support.entity.Pagination;
 import com.nyvi.support.sql.MysqlSqlHelper;
 import com.nyvi.support.sql.SqlHelper;
 import com.nyvi.support.util.BeanMapUtils;
@@ -40,13 +40,13 @@ public class BaseDAO<T extends Serializable> {
 
 	/**
 	 * 添加
-	 * @param t 实体
+	 * @param t 实体,添加非空字段
 	 * @return 影响行数
 	 */
 	public int insert(T t) {
-		String insertSql = sqlHelper.getInsertSql(cls);
 		Map<String, Object> paramMap = BeanMapUtils.beanToMap(t);
 		sqlHelper.initTableKey(cls, paramMap);
+		String insertSql = sqlHelper.getInsertSql(cls, paramMap);
 		return getNamedParameterJdbcTemplate().update(insertSql, paramMap);
 	}
 
@@ -79,7 +79,7 @@ public class BaseDAO<T extends Serializable> {
 	 * @param <Q> 查询条件
 	 * @return 影响行数
 	 */
-	public <Q extends BaseQuery> int getCount(Q query) {
+	public <Q extends T> int getCount(Q query) {
 		Map<String, Object> paramMap = BeanMapUtils.beanToMap(query);
 		String selectCountSql = sqlHelper.getSelectCountSql(cls, query.getClass(), paramMap);
 		return getNamedParameterJdbcTemplate().queryForObject(selectCountSql, paramMap, Integer.class);
@@ -102,12 +102,13 @@ public class BaseDAO<T extends Serializable> {
 	/**
 	 * 查询列表
 	 * @param query 查询条件
+	 * @param page 分页条件
 	 * @param <Q> 查询条件
 	 * @return 返回列表
 	 */
-	public <Q extends BaseQuery> List<T> getList(Q query) {
+	public <Q extends T> List<T> getList(Q query, Pagination page) {
 		Map<String, Object> paramMap = BeanMapUtils.beanToMap(query);
-		String selectPageSql = sqlHelper.getSelectPageSql(cls, query.getClass(), paramMap);
+		String selectPageSql = sqlHelper.getSelectPageSql(cls, query.getClass(), paramMap, page);
 		RowMapper<T> rowMapper = BeanPropertyRowMapper.newInstance(cls);
 		return getNamedParameterJdbcTemplate().query(selectPageSql, paramMap, rowMapper);
 	}
@@ -118,7 +119,6 @@ public class BaseDAO<T extends Serializable> {
 	 * @return 影响行数
 	 */
 	public int batchSave(List<T> list) {
-		String insertSql = sqlHelper.getInsertSql(cls);
 		List<T> paramMapList = new ArrayList<>(list.size());
 		Map<String, Object> paramMap = null;
 		for (T t : list) {
@@ -126,6 +126,10 @@ public class BaseDAO<T extends Serializable> {
 			sqlHelper.initTableKey(cls, paramMap);
 			paramMapList.add(BeanMapUtils.mapToBean(paramMap, t));
 		}
+		if (CollectionUtils.isEmpty(paramMapList)) {
+			return 0;
+		}
+		String insertSql = sqlHelper.getInsertSql(cls, paramMap);
 		SqlParameterSource[] valueParameter = SqlParameterSourceUtils.createBatch(paramMapList.toArray());
 		return getNamedParameterJdbcTemplate().batchUpdate(insertSql, valueParameter).length;
 	}
@@ -155,4 +159,5 @@ public class BaseDAO<T extends Serializable> {
 	public void setNamedParameterJdbcTemplate(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
 		this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
 	}
+
 }

@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.nyvi.support.base.dto.TableResult;
-import com.nyvi.support.base.query.BaseQuery;
+import com.nyvi.support.entity.Pagination;
 
 /**
  * 公共接口
@@ -60,7 +60,7 @@ public interface BaseService<T extends Serializable> {
 	 * @param <Q> 查询实体
 	 * @return 影响行数
 	 */
-	<Q extends BaseQuery> int getCount(Q query);
+	<Q extends T> int getCount(Q query);
 
 	/**
 	 * 查询实体
@@ -76,13 +76,23 @@ public interface BaseService<T extends Serializable> {
 	 * @param <Q> 查询实体
 	 * @return 返回列表
 	 */
-	<Q extends BaseQuery> List<T> getList(Q query);
+	<Q extends T> List<T> getList(Q query);
+
+	/**
+	 * 查询列表
+	 * @param query 查询条件
+	 * @param page 分页条件
+	 * @param <Q> 查询实体
+	 * @return 返回列表
+	 */
+	<Q extends T> List<T> getList(Q query, Pagination page);
 
 	/**
 	 * 查询表格列表
 	 * @param query 查询条件
+	 * @param page 分页条件
 	 * @param <Q> 查询实体
 	 * @return 表格显示对象
 	 */
-	<Q extends BaseQuery> TableResult<T> getTableData(Q query);
+	<Q extends T> TableResult<T> getTableData(Q query, Pagination page);
 }

@@ -9,7 +9,7 @@ spring-boot-starter-jdbc-helper 是在springboot && springJDBC 基础上只做�
 <dependency>
     <groupId>com.github.nyvi</groupId>
     <artifactId>spring-boot-starter-jdbc-helper</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 </dependency>
 ```
 * 创建DO
@@ -68,7 +68,7 @@ public class SysUserServiceImpl extends BaseServiceImpl<SysUserDO> implements Sy
 * 创建Query
 ```java
 @SuppressWarnings("serial")
-public class SysUserQuery extends BaseQuery {
+public class SysUserQuery extends SysUserDO {
 
 	@Query(operate = Operate.LIKE, suffix = "%")
 	public String username;

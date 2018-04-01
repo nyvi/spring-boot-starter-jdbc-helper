@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.nyvi.support.base.dao.BaseDAO;
 import com.nyvi.support.base.dto.TableResult;
-import com.nyvi.support.base.query.BaseQuery;
 import com.nyvi.support.base.service.BaseService;
+import com.nyvi.support.entity.Pagination;
 
 /**
  * 公共接口实现类
@@ -54,7 +54,7 @@ public class BaseServiceImpl<T extends Serializable> implements BaseService<T> {
 	}
 
 	@Override
-	public <Q extends BaseQuery> int getCount(Q query) {
+	public <Q extends T> int getCount(Q query) {
 		return baseDAO.getCount(query);
 	}
 
@@ -64,15 +64,20 @@ public class BaseServiceImpl<T extends Serializable> implements BaseService<T> {
 	}
 
 	@Override
-	public <Q extends BaseQuery> List<T> getList(Q query) {
-		return baseDAO.getList(query);
+	public <Q extends T> List<T> getList(Q query) {
+		return this.getList(query, Pagination.startPage(1, Integer.MAX_VALUE));
 	}
 
 	@Override
-	public <Q extends BaseQuery> TableResult<T> getTableData(Q query) {
+	public <Q extends T> List<T> getList(Q query, Pagination page) {
+		return baseDAO.getList(query, page);
+	}
+
+	@Override
+	public <Q extends T> TableResult<T> getTableData(Q query, Pagination page) {
 		int count = this.getCount(query);
 		if (count > 0) {
-			List<T> list = this.getList(query);
+			List<T> list = this.getList(query, page);
 			return TableResult.bulid(count, list);
 		}
 		return TableResult.empty();

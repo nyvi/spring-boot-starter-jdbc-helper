@@ -3,6 +3,7 @@ package com.nyvi.support.sql;
 import java.util.List;
 import java.util.Map;
 
+import com.nyvi.support.entity.Pagination;
 import com.nyvi.support.entity.QueryInfo;
 import com.nyvi.support.entity.TableFieldInfo;
 import com.nyvi.support.entity.TableInfo;
@@ -21,23 +22,8 @@ import com.nyvi.support.util.TableInfoHelper;
  */
 public class MysqlSqlHelper implements SqlHelper {
 
-	/**
-	 * 页码
-	 */
-	private final static String PAGE_NUMBER = "pageNumber";
-
-	/**
-	 * 每页显示个数
-	 */
-	private final static String PAGE_SIZE = "pageSize";
-
-	/**
-	 * 排序
-	 */
-	private final static String ORDER = "order";
-
 	@Override
-	public String getInsertSql(Class<?> clazz) {
+	public String getInsertSql(Class<?> clazz, Map<String, Object> paramMap) {
 		TableInfo table = getTable(clazz);
 		StringBuilder fieldBuilder = new StringBuilder(128);
 		StringBuilder placeholderBuilder = new StringBuilder(128);
@@ -45,8 +31,10 @@ public class MysqlSqlHelper implements SqlHelper {
 		fieldBuilder.append(table.getKeyColumn());
 		placeholderBuilder.append(":").append(table.getKeyProperty());
 		for (TableFieldInfo tableFieldInfo : fieldList) {
-			fieldBuilder.append(",").append(tableFieldInfo.getColumn());
-			placeholderBuilder.append(",").append(":").append(tableFieldInfo.getProperty());
+			if (paramMap.containsKey(tableFieldInfo.getProperty())) {
+				fieldBuilder.append(",").append(tableFieldInfo.getColumn());
+				placeholderBuilder.append(",").append(":").append(tableFieldInfo.getProperty());
+			}
 		}
 		return String.format(SqlMethod.INSERT.getSql(), table.getTableName(), fieldBuilder.toString(),
 				placeholderBuilder.toString());
@@ -92,10 +80,10 @@ public class MysqlSqlHelper implements SqlHelper {
 	}
 
 	@Override
-	public String getSelectPageSql(Class<?> clazz, Class<?> qClazz, Map<String, Object> paramMap) {
+	public String getSelectPageSql(Class<?> clazz, Class<?> qClazz, Map<String, Object> paramMap, Pagination page) {
 		TableInfo table = getTable(clazz);
 		return String.format(SqlMethod.SELECT_PAGE.getSql(), getSelectColum(table), table.getTableName(),
-				getWhereSql(clazz, qClazz, paramMap), getOrder(paramMap), getLimitSql(paramMap));
+				getWhereSql(clazz, qClazz, paramMap), getOrder(page), getLimitSql(page));
 	}
 
 	@Override
@@ -116,8 +104,8 @@ public class MysqlSqlHelper implements SqlHelper {
 			paramMap.put(table.getKeyProperty(), IdWorker.get32UUID());
 			return;
 		}
-		if (IdType.INPUT.equals(idType)) {
-			paramMap.remove(table.getKeyProperty());
+		if (IdType.AUTO.equals(idType)) {
+			paramMap.put(table.getKeyProperty(), null);
 			return;
 		}
 	}
@@ -142,12 +130,11 @@ public class MysqlSqlHelper implements SqlHelper {
 	 * @param paramMap 查询参数
 	 * @return 分页语句
 	 */
-	private String getOrder(Map<String, Object> paramMap) {
-		if (paramMap.containsKey(ORDER)) {
-			String order = paramMap.get(ORDER).toString();
-			return String.format(SqlMethod.ORDER_BY.getSql(), StrUtils.camelToUnderline(order));
+	private String getOrder(Pagination page) {
+		if (StrUtils.isNotBlank(page.getOrder())) {
+			return String.format(SqlMethod.ORDER_BY.getSql(), StrUtils.camelToUnderline(page.getOrder()));
 		}
-		return "";
+		return StrUtils.EMPTY;
 	}
 
 	/**
@@ -155,14 +142,13 @@ public class MysqlSqlHelper implements SqlHelper {
 	 * @param paramMap 查询参数
 	 * @return 分页语句
 	 */
-	private String getLimitSql(Map<String, Object> paramMap) {
-		if (paramMap.containsKey(PAGE_NUMBER) && paramMap.containsKey(PAGE_SIZE)) {
-			int pageNumber = (int) paramMap.get("pageNumber");
-			int pageSize = (int) paramMap.get("pageSize");
-			int offset = (pageNumber - 1) * pageSize;
+	private String getLimitSql(Pagination page) {
+		if (!page.getPageNumber().equals(1) || !page.getPageSize().equals(Integer.MAX_VALUE)) {
+			int pageSize = page.getPageSize();
+			int offset = (page.getPageNumber() - 1) * pageSize;
 			return String.format(SqlMethod.LIMIT.getSql(), offset, pageSize);
 		}
-		return "";
+		return StrUtils.EMPTY;
 	}
 
 	/**
@@ -173,25 +159,29 @@ public class MysqlSqlHelper implements SqlHelper {
 	 * @return 条件语句
 	 */
 	private String getWhereSql(Class<?> clazz, Class<?> qClazz, Map<String, Object> paramMap) {
-		StringBuilder whereBuilder = new StringBuilder(128);
+		StringBuilder whereBuilder = new StringBuilder(256);
 		List<QueryInfo> queryInfoList = getQueryInfoList(qClazz);
 		for (QueryInfo queryInfo : queryInfoList) {
 			String fieldName = queryInfo.getProperty();
 			if (paramMap.containsKey(fieldName)) {
+				// in 查询
 				if (Operate.IN.equals(queryInfo.getOperate())) {
 					whereBuilder.append(" and ").append(queryInfo.getColumn()).append(" in (:").append(fieldName)
 							.append(")");
 					continue;
 				}
-				// 添加前缀
-				if (StrUtils.isNotBlank(queryInfo.getPrefix())) {
-					String s = paramMap.get(fieldName).toString();
-					paramMap.put(fieldName, queryInfo.getPrefix() + s);
-				}
-				// 添加后缀
-				if (StrUtils.isNotBlank(queryInfo.getSuffix())) {
-					String s = paramMap.get(fieldName).toString();
-					paramMap.put(fieldName, s + queryInfo.getSuffix());
+				// like 查询
+				if (Operate.LIKE.equals(queryInfo.getOperate())) {
+					// 添加前缀
+					if (StrUtils.isNotBlank(queryInfo.getPrefix())) {
+						String s = paramMap.get(fieldName).toString();
+						paramMap.put(fieldName, queryInfo.getPrefix() + s);
+					}
+					// 添加后缀
+					if (StrUtils.isNotBlank(queryInfo.getSuffix())) {
+						String s = paramMap.get(fieldName).toString();
+						paramMap.put(fieldName, s + queryInfo.getSuffix());
+					}
 				}
 				String operate = queryInfo.getOperate().getValue();
 				whereBuilder.append(" and ").append(queryInfo.getColumn()).append(" ").append(operate).append(" :")
