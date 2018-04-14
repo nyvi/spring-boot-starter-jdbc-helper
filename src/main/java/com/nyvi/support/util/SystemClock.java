@@ -1,8 +1,7 @@
 package com.nyvi.support.util;
 
 import java.sql.Timestamp;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -14,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>
  * System.currentTimeMillis()的调用比new一个普通对象要耗时的多（具体耗时高出多少我还没测试过，有人说是100倍左右）<br>
  * System.currentTimeMillis()之所以慢是因为去跟系统打了一次交道<br>
- * 后台定时更新时钟，JVM退出时，线程自动回收<br>
+ * 后台定时更新时钟,JVM退出时,线程自动回收<br>
  * 10亿：43410,206,210.72815533980582%<br>
  * 1亿：4699,29,162.0344827586207%<br>
  * 1000万：480,12,40.0%<br>
@@ -25,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class SystemClock {
 
 	private final long period;
+
 	private final AtomicLong now;
 
 	private SystemClock(long period) {
@@ -46,15 +46,17 @@ public class SystemClock {
 	}
 
 	private void scheduleClockUpdating() {
-		ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+
+		ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
 
 			@Override
-			public Thread newThread(Runnable runnable) {
-				Thread thread = new Thread(runnable, "System Clock");
+			public Thread newThread(Runnable r) {
+				Thread thread = new Thread(r, "System Clock");
 				thread.setDaemon(true);
 				return thread;
 			}
 		});
+
 		scheduler.scheduleAtFixedRate(new Runnable() {
 
 			@Override
