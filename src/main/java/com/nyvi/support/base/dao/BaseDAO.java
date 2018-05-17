@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -84,7 +85,8 @@ public class BaseDAO<T extends Serializable> {
 	public <Q extends T> int getCount(Q query) {
 		Map<String, Object> paramMap = BeanMapUtils.beanToMap(query);
 		String selectCountSql = sqlHelper.getSelectCountSql(cls, query.getClass(), paramMap);
-		return getNamedParameterJdbcTemplate().queryForObject(selectCountSql, paramMap, Integer.class);
+		Integer ret = getNamedParameterJdbcTemplate().queryForObject(selectCountSql, paramMap, Integer.class);
+		return Objects.nonNull(ret) ? ret.intValue() : 0;
 	}
 
 	/**
