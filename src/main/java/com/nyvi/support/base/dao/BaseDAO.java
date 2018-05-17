@@ -26,9 +26,9 @@ import com.nyvi.support.util.BeanMapUtils;
  */
 public class BaseDAO<T extends Serializable> {
 
-	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+	protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-	private SqlHelper sqlHelper = new MysqlSqlHelper();
+	protected final SqlHelper sqlHelper = new MysqlSqlHelper();
 
 	private Class<T> cls;
 
@@ -47,6 +47,8 @@ public class BaseDAO<T extends Serializable> {
 		Map<String, Object> paramMap = BeanMapUtils.beanToMap(t);
 		sqlHelper.initTableKey(cls, paramMap);
 		String insertSql = sqlHelper.getInsertSql(cls, paramMap);
+		// id回显示,自增id不回显
+		BeanMapUtils.mapToBean(paramMap, t);
 		return getNamedParameterJdbcTemplate().update(insertSql, paramMap);
 	}
 

@@ -115,7 +115,7 @@ public class MysqlSqlHelper implements SqlHelper {
 	 * @param table 表信息
 	 * @return 字段
 	 */
-	private String getSelectColum(TableInfo table) {
+	public String getSelectColum(TableInfo table) {
 		StringBuilder fieldBuilder = new StringBuilder(128);
 		List<TableFieldInfo> fieldList = table.getFieldList();
 		fieldBuilder.append(table.getKeyColumn());
@@ -130,7 +130,7 @@ public class MysqlSqlHelper implements SqlHelper {
 	 * @param paramMap 查询参数
 	 * @return 分页语句
 	 */
-	private String getOrder(Pagination page) {
+	public String getOrder(Pagination page) {
 		if (StrUtils.isNotBlank(page.getOrder())) {
 			return String.format(SqlMethod.ORDER_BY.getSql(), StrUtils.camelToUnderline(page.getOrder()));
 		}
@@ -142,7 +142,7 @@ public class MysqlSqlHelper implements SqlHelper {
 	 * @param paramMap 查询参数
 	 * @return 分页语句
 	 */
-	private String getLimitSql(Pagination page) {
+	public String getLimitSql(Pagination page) {
 		if (!page.getPageNumber().equals(1) || !page.getPageSize().equals(Integer.MAX_VALUE)) {
 			int pageSize = page.getPageSize();
 			int offset = (page.getPageNumber() - 1) * pageSize;
@@ -158,7 +158,7 @@ public class MysqlSqlHelper implements SqlHelper {
 	 * @param paramMap 查询参数
 	 * @return 条件语句
 	 */
-	private String getWhereSql(Class<?> clazz, Class<?> qClazz, Map<String, Object> paramMap) {
+	public String getWhereSql(Class<?> clazz, Class<?> qClazz, Map<String, Object> paramMap) {
 		StringBuilder whereBuilder = new StringBuilder(256);
 		List<QueryInfo> queryInfoList = getQueryInfoList(qClazz);
 		for (QueryInfo queryInfo : queryInfoList) {
@@ -196,7 +196,7 @@ public class MysqlSqlHelper implements SqlHelper {
 	 * @param clazz 表反射实体类
 	 * @return 表信息
 	 */
-	private TableInfo getTable(Class<?> clazz) {
+	public TableInfo getTable(Class<?> clazz) {
 		return TableInfoHelper.getTableInfo(clazz);
 	}
 
@@ -205,7 +205,7 @@ public class MysqlSqlHelper implements SqlHelper {
 	 * @param clazz 查询反射实体类
 	 * @return 查询信息
 	 */
-	private List<QueryInfo> getQueryInfoList(Class<?> clazz) {
+	public List<QueryInfo> getQueryInfoList(Class<?> clazz) {
 		return TableInfoHelper.getQueryInfoList(clazz);
 	}
 
